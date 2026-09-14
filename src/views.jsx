@@ -9,43 +9,72 @@ export function SeriesView({ stories, storyId, select, patchStory, removeStory, 
   const [idea, setIdea] = useState("");
   const [count, setCount] = useState(5);
   const [paste, setPaste] = useState("");
+  const [pipe, setPipe] = useState(false);
+  const [q, setQ] = useState("");
+  const [editId, setEditId] = useState(null);
+  const filtered = stories.filter((s) => {
+    const n = q.trim().toLowerCase();
+    if (!n) return true;
+    return `${s.name} ${s.plot}`.toLowerCase().includes(n);
+  });
   return (
     <section className="grid gap-4">
-      <div className="rounded-[32px] border border-berry/30 bg-gradient-to-br from-berry/15 to-pulp/80 p-6">
-        <div className="mb-4 flex items-end justify-between gap-3">
-          <div>
-            <p className="text-[11px] font-extrabold tracking-[0.16em] text-mango">PIPELINE IA</p>
-            <h2 className="mt-1 text-xl font-extrabold">Générer une série entière</h2>
+      <button onClick={() => setPipe((v) => !v)} className="flex h-14 items-center justify-between rounded-[24px] border border-berry/30 bg-berry/10 px-5 text-sm font-extrabold">
+        Pipeline IA · générer / importer
+        <span className="text-xs font-bold text-cream/50">{pipe ? "fermer" : "ouvrir"}</span>
+      </button>
+      {pipe && (
+        <div className="rounded-[32px] border border-berry/30 bg-gradient-to-br from-berry/15 to-pulp/80 p-6">
+          <div className="mb-4 flex items-end justify-between gap-3">
+            <div>
+              <p className="text-[11px] font-extrabold tracking-[0.16em] text-mango">PIPELINE IA</p>
+              <h2 className="mt-1 text-xl font-extrabold">Générer une série entière</h2>
+            </div>
+            <span className="rounded-full bg-ink px-3 py-1 text-[10px] font-bold text-cream/50">plans {LOCKS.durations.join("/")}s lock</span>
           </div>
-          <span className="rounded-full bg-ink px-3 py-1 text-[10px] font-bold text-cream/50">plans {LOCKS.durations.join("/")}s lock</span>
-        </div>
-        <textarea value={idea} onChange={(e) => setIdea(e.target.value)} rows={3} placeholder="Twist de la série…" className="mb-3 w-full resize-none rounded-[20px] bg-ink px-4 py-3 text-sm leading-6 outline-none" />
-        <div className="mb-4 flex flex-wrap items-center gap-3">
-          <label className="flex items-center gap-2 text-xs font-bold text-cream/50">
-            Épisodes
-            <input type="number" min="1" max="12" value={count} onChange={(e) => setCount(Number(e.target.value) || 5)} className="h-10 w-16 rounded-[12px] bg-ink text-center text-sm font-extrabold text-cream outline-none" />
-          </label>
-          <button onClick={() => copyText(masterPrompt({ idea, episodeCount: count }))} className="flex h-12 items-center gap-2 rounded-[18px] bg-cream px-4 text-sm font-extrabold text-ink">
-            <Copy size={16} /> Copier le prompt
-          </button>
-        </div>
-        <textarea value={paste} onChange={(e) => setPaste(e.target.value)} rows={5} placeholder="Colle le JSON de l’IA" className="mb-3 w-full resize-none rounded-[20px] bg-ink px-4 py-3 font-mono text-[12px] leading-5 outline-none" />
-        <button onClick={() => { try { importStory(paste); setPaste(""); } catch (e) { ping(e.message || "JSON invalide"); } }} className="h-12 w-full rounded-[18px] bg-berry text-sm font-extrabold text-white">Importer la série</button>
-      </div>
-      {stories.length === 0 && <div className="rounded-[28px] border border-dashed border-white/15 p-10 text-cream/50">Aucune série.</div>}
-      {stories.map((s) => (
-        <article key={s.id} className={`rounded-[28px] border p-6 ${s.id === storyId ? "border-berry bg-berry/10" : "border-white/8 bg-pulp/80"}`}>
-          <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
-            <button onClick={() => select(s.id)} className="text-left">
-              <h3 className="text-xl font-extrabold">{s.name}</h3>
-              <p className="mt-1 text-xs text-cream/45">{s.episodes.length} épisodes · {s.characters.length} persos</p>
+          <textarea value={idea} onChange={(e) => setIdea(e.target.value)} rows={3} placeholder="Twist de la série…" className="mb-3 w-full resize-none rounded-[20px] bg-ink px-4 py-3 text-sm leading-6 outline-none" />
+          <div className="mb-4 flex flex-wrap items-center gap-3">
+            <label className="flex items-center gap-2 text-xs font-bold text-cream/50">
+              Épisodes
+              <input type="number" min="1" max="12" value={count} onChange={(e) => setCount(Number(e.target.value) || 5)} className="h-10 w-16 rounded-[12px] bg-ink text-center text-sm font-extrabold text-cream outline-none" />
+            </label>
+            <button onClick={() => copyText(masterPrompt({ idea, episodeCount: count }))} className="flex h-12 items-center gap-2 rounded-[18px] bg-cream px-4 text-sm font-extrabold text-ink">
+              <Copy size={16} /> Copier le prompt
             </button>
-            <button onClick={() => removeStory(s.id)} className="text-xs font-bold text-berry">Supprimer</button>
           </div>
-          <input value={s.name} onChange={(e) => patchStory({ ...s, name: e.target.value })} className="mb-3 h-12 w-full rounded-[16px] bg-ink px-4 text-sm font-extrabold outline-none" />
-          <textarea value={s.plot} onChange={(e) => patchStory({ ...s, plot: e.target.value })} rows={3} placeholder="Trame de la série" className="w-full resize-none rounded-[16px] bg-ink px-4 py-3 text-sm leading-6 outline-none" />
-        </article>
-      ))}
+          <textarea value={paste} onChange={(e) => setPaste(e.target.value)} rows={5} placeholder="Colle le JSON de l’IA" className="mb-3 w-full resize-none rounded-[20px] bg-ink px-4 py-3 font-mono text-[12px] leading-5 outline-none" />
+          <button onClick={() => { try { importStory(paste); setPaste(""); } catch (e) { ping(e.message || "JSON invalide"); } }} className="h-12 w-full rounded-[18px] bg-berry text-sm font-extrabold text-white">Importer la série</button>
+        </div>
+      )}
+      <div className="flex items-center gap-3">
+        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Rechercher une série…" className="h-12 flex-1 rounded-[16px] bg-pulp px-4 text-sm outline-none ring-1 ring-white/8" />
+        <span className="text-xs font-bold text-cream/40">{filtered.length}/{stories.length}</span>
+      </div>
+      {filtered.length === 0 && <div className="rounded-[28px] border border-dashed border-white/15 p-10 text-cream/50">Aucune série.</div>}
+      <div className="max-h-[62vh] space-y-2 overflow-auto pr-1">
+        {filtered.map((s) => {
+          const on = s.id === storyId;
+          const editing = editId === s.id;
+          return (
+            <article key={s.id} className={`rounded-[22px] border px-4 py-3 ${on ? "border-berry bg-berry/10" : "border-white/8 bg-pulp/80"}`}>
+              <div className="flex items-center gap-3">
+                <button onClick={() => select(s.id)} className="min-w-0 flex-1 text-left">
+                  <div className="truncate text-sm font-extrabold">{s.name}</div>
+                  <div className="truncate text-[11px] text-cream/40">{s.episodes.length} ép · {s.characters.length} persos{s.plot ? ` · ${s.plot}` : ""}</div>
+                </button>
+                <button onClick={() => setEditId(editing ? null : s.id)} className="shrink-0 rounded-full bg-white/8 px-3 py-1 text-[11px] font-bold">{editing ? "OK" : "Édit"}</button>
+                <button onClick={() => removeStory(s.id)} className="shrink-0 text-[11px] font-bold text-berry">X</button>
+              </div>
+              {editing && (
+                <div className="mt-3 grid gap-2">
+                  <input value={s.name} onChange={(e) => patchStory({ ...s, name: e.target.value })} className="h-11 w-full rounded-[14px] bg-ink px-3 text-sm font-extrabold outline-none" />
+                  <textarea value={s.plot} onChange={(e) => patchStory({ ...s, plot: e.target.value })} rows={3} placeholder="Trame" className="w-full resize-none rounded-[14px] bg-ink px-3 py-2 text-sm outline-none" />
+                </div>
+              )}
+            </article>
+          );
+        })}
+      </div>
     </section>
   );
 }
@@ -64,7 +93,7 @@ export function ExportView({ story, episode, setEpId, copyText, ping }) {
   }
   return (
     <section className="grid gap-6 lg:grid-cols-[240px_1fr]">
-      <aside className="h-fit rounded-[28px] border border-white/8 bg-pulp/80 p-4">
+      <aside className="h-fit max-h-[70vh] overflow-auto rounded-[28px] border border-white/8 bg-pulp/80 p-4">
         {story.episodes.map((e) => (
           <button key={e.id} onClick={() => setEpId(e.id)} className={`mb-2 w-full rounded-[16px] px-3 py-3 text-left text-sm font-bold ${e.id === episode.id ? "bg-berry text-white" : "bg-ink/60"}`}>
             {e.title}
@@ -73,7 +102,7 @@ export function ExportView({ story, episode, setEpId, copyText, ping }) {
         ))}
       </aside>
       <div className="grid gap-5">
-        <div className="rounded-[28px] border border-lime/20 bg-lime/10 p-5 text-sm leading-6 text-cream/80">Colle le pack dans Kling / Veo / Imagine. 1 image + 1 motion par plan.</div>
+        <div className="rounded-[28px] border border-lime/20 bg-lime/10 p-5 text-sm leading-6 text-cream/80">Colle le pack dans Kling / Veo / Imagine.</div>
         <div className="flex flex-wrap gap-3">
           <button onClick={() => copyText(pack)} className="flex h-12 items-center gap-2 rounded-[18px] bg-cream px-4 text-sm font-extrabold text-ink"><Copy size={16} /> Pack IA</button>
           <button onClick={() => download(`${slug(story.name)}-${slug(episode.title)}.txt`, pack, "text/plain")} className="flex h-12 items-center gap-2 rounded-[18px] border border-white/10 px-4 text-sm font-bold"><Download size={16} /> .txt</button>
