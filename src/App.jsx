@@ -111,7 +111,7 @@ export default function App() {
                 }}
               />
             )}
-            {tab === "bible" && story && <BibleView story={story} patchStory={patchStory} ping={ping} />}
+            {tab === "bible" && story && <BibleView story={story} patchStory={patchStory} ping={ping} copyText={copyText} />}
             {tab === "board" && story && <BoardView story={story} episode={episode} setEpId={setEpId} patchStory={patchStory} ping={ping} />}
             {tab === "export" && story && <ExportView story={story} episode={episode} setEpId={setEpId} copyText={copyText} ping={ping} />}
             {tab === "check" && <CheckView checks={db.checks} toggleCheck={toggleCheck} items={CHECKLIST} />}
