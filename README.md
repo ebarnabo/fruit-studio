@@ -1,17 +1,21 @@
 # Fruit Studio
 
-App locale pour produire des épisodes Fruit Love Island.
+Bible de série pour produire des épisodes Fruit / AI slop en masse.
 
-- Scénarios à partir de templates
-- Historique (localStorage)
-- Checklist de production
-- Publication via share sheet / CapCut / apps natives (gratuit)
+## Modèle
 
-## Run
+Série (nom + trame)
+→ Persos (image, look lock, caractère, parole, comportement)
+→ Épisodes
+→ Scènes (musique, incrusts, cast)
+→ Plans (durée, description, action, manière)
+
+## Export
+
+Pack texte + JSON à coller dans Kling / Veo / Imagine.
+Identity lock inclus pour figer les visages.
 
 ```bash
 npm i
 npm run dev
 ```
-
-Build : `npm run build`
